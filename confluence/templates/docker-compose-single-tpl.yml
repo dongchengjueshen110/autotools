@@ -1,0 +1,42 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.7.33
+    hostname: mysql57-single
+    container_name: mysql57-single
+    restart: always
+    ports:
+      - '${MYSQL_PORT}:3306'
+    volumes:
+      - ${DATA_DIR}/mysql/data:/var/lib/mysql
+      - ${DATA_DIR}/mysql/logs:/var/log/mysql
+      - ${WORKDIR}/conf/my.cnf:/etc/mysql/mysql.conf.d/my.cnf
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    networks:
+      - default_bridge
+  confluence:
+    image: atlassian/confluence-server:6.15.7-alpine
+    hostname: confluence
+    container_name: confluence
+    restart: always
+    ports:
+      - '${CONFLUENCE_HOST_PORT}:8090'
+    volumes:
+      - ${WORKDIR}/lib/atlassian-extras-2.4.jar:/opt/atlassian/confluence/confluence/WEB-INF/lib/atlassian-extras-decoder-v2-3.4.1.jar
+      - ${WORKDIR}/lib/mysql-connector-java-5.1.49-bin.jar:/opt/atlassian/confluence/confluence/WEB-INF/lib/mysql-connector-java-5.1.49-bin.jar
+      - ${DATA_DIR}/confluence-data:/var/atlassian/application-data/confluence
+      - ${WORKDIR}/bin/setenv.sh:/opt/atlassian/confluence/bin/setenv.sh
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+    links:
+      - mysql
+    networks:
+      - default_bridge
+networks:
+  default_bridge:
+    external: true
+
